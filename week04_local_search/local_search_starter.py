@@ -74,17 +74,21 @@ def count_conflicts(board):
         conflict count = 0
     """
 
-    # TODO:
-    # Compare each queen with every queen
-    # that comes after it.
-    #
-    # Queens conflict when they are:
-    #
-    #   1. in the same row
-    #   2. on the same diagonal
+    conflicts = 0
 
-    pass
+    # compare each queen with every queen to its right (so ecah pair is counted once)
+    for i in range(len(board)):
+        for j in range(i + 1, len(board)):
 
+            # Same row: both queens have the smae row value
+            same_row = board[i] == board[j]
+
+            # same diagonal: row distance equals column distance
+            same_diagonal = abs(board[i] - board[j]) == abs(i - j)
+            
+            if same_row or same_diagonal:
+                conflicts += 1
+    return conflicts
 
 # --------------------------------------------------
 # TASK 2 — EXPLORE THE PROBLEM
@@ -102,11 +106,13 @@ def generate_neighbours(problem, board):
 
     neighbours = []
 
-    # TODO:
-    #
-    # 1. Ask the problem for the available actions.
-    # 2. Apply each action.
-    # 3. Add the resulting state to neighbours.
+    # Ask the problem which moves are possible from this board
+    for action in problem.actions(board):
+        # Apply the move to get a new board (Oroginal un=changed)
+        new_board = problem.result(board, action)
+
+        # Store the new board as a neighbour
+        neighbours.append(new_board)
 
     return neighbours
 
@@ -142,9 +148,26 @@ def hill_climbing(problem, start_board):
 
     current = start_board
 
-    # TODO
+    while True:
 
-    pass
+        # Stop early if the board is already solved 
+        if count_conflicts(current) == 0:
+            return current
+        
+        # Generate every board one  ove away
+        neighbours = generate_neighbours(problem, current)
+
+        # Pick the neighbour with the fewest conflicts
+        best = min(neighbours, key=count_conflicts)
+
+        # If it isnt strictly better were stuck (local min or plateau)
+        if count_conflicts(best) >= count_conflicts(current):
+            return current
+        
+        # Otherwise move to the better board and repeat
+        current = best
+
+    
 
 
 # --------------------------------------------------
@@ -165,11 +188,33 @@ def simulated_annealing(problem, start_board):
     current = start_board
 
     temperature = 10.0
-    cooling_rate = 0.95
+    cooling_rate = 0.999
 
-    # TODO
+    
 
-    pass
+    # Keeps going until the system has cooled almost completely
+    while temperature > 0.1:
+
+        # Stop if the board is solved 
+        if count_conflicts(current) == 0:
+            return current
+        
+        # Pick one random neighbour
+        neighbour = random.choice(generate_neighbours(problem, current))
+
+        # How much worse is the neighbour? (negative = better)
+        delta = count_conflicts(neighbour) - count_conflicts(current)
+
+        # Always accept a better move 
+        if delta < 0 or random.random() < math.exp(-delta / temperature):
+            current = neighbour
+        
+        # Cool down: worse moves become lesss likely over time 
+        temperature *= cooling_rate
+
+    return current
+
+
 
 
 # --------------------------------------------------
@@ -211,3 +256,17 @@ if __name__ == "__main__":
     print(
         f"{len(neighbours)} neighbours generated"
     )
+
+    print("\nHill Climbing")
+
+    final = hill_climbing(problem, board)
+
+    print("Start:", board, "cost", count_conflicts(board))
+    print("Final:", final, "cost", count_conflicts(final))
+
+    print("\nSimulated Annealing")
+
+    final_sa = simulated_annealing(problem, board)
+
+    print("Final:", final_sa, "cost", count_conflicts(final_sa))
+
