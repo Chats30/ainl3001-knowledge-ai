@@ -49,7 +49,26 @@ class GridProblem(Problem):
         Remember: an action must not move outside the grid.
         """
 
-        # TODO:
+        x, y = state
+        # Split the state into its x column and y row coordinates
+        actions = []
+
+        # Start with no moves then add each one that stays on the grid action = []
+        if y > 0:
+            actions.append("UP")
+        # DOWN raises y so its only valid if were not on the bottom row 
+        if y < GRID_SIZE - 1:
+            actions.append("DOWN")
+        # LEFT lowers x so its only valid 
+        if x > 0:
+            actions.append("LEFT")
+        # RIGHT raises x so its only valid if were not in the right column
+        if x < GRID_SIZE - 1:
+            actions.append("RIGHT")
+        
+        # Return only the legal moves from this state
+        return actions 
+
         #
         # 1. Extract x and y from state.
         # 2. Create an empty list of actions.
@@ -57,7 +76,7 @@ class GridProblem(Problem):
         # 4. Add valid actions to the list.
         # 5. Return the list.
 
-        pass
+        
 
     def result(self, state, action):
         """
@@ -71,13 +90,21 @@ class GridProblem(Problem):
             result = (1, 0)
         """
 
-        # TODO:
-        #
-        # 1. Extract x and y from state.
-        # 2. Check which action was requested.
-        # 3. Return the resulting state.
+        x, y = state
 
-        pass
+        # Each action moves one step in one direction and returns the new state.
+        # No boundary checks are needed: actions() only allows valid moves 
+        if action == "UP":
+            return (x, y -1)
+        if action == "DOWN":
+            return (x, y + 1)
+        if action == "LEFT":
+            return (x - 1, y)
+        if action == "RIGHT":
+            return(x + 1, y)
+
+        # Raise an error for anything that isnt one of the four moves 
+        raise ValueError(f"Unknow action: {action}")
 
 
 # --------------------------------------------------
