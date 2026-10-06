@@ -441,11 +441,11 @@ Record the final cost.
 
 | Attempt | Final Cost |
 |---|---:|
-| 1 | |
-| 2 | |
-| 3 | |
-| 4 | |
-| 5 | |
+| 1 | 0 |
+| 2 | 1 |
+| 3 | 1 |
+| 4 | 2 |
+| 5 | 1 |
 
 Consider:
 
@@ -516,8 +516,8 @@ Record the best cost you find.
 
 | Algorithm | Best Cost Found |
 |---|---:|
-| Hill Climbing | |
-| Simulated Annealing | |
+| Hill Climbing | 0 (only 1 of 5 runs; usually stuck at 1–2) |
+| Simulated Annealing | 0 (most runs with `cooling_rate = 0.999`) |
 
 Consider the behaviour you observed:
 
@@ -591,6 +591,32 @@ Complete these after finishing the main tasks.
 6. What is the difference between deterministic and stochastic search?
 7. How did the `Problem` representation allow us to represent both a grid world and N-Queens?
 8. How do optimisation techniques such as these relate to Machine Learning?
+
+### Answers
+
+**1. What is the difference between search and optimisation?**
+Search looks for a path from an initial state to a goal state, and the path itself matters (e.g. the route through the grid world). Optimisation looks for the best possible final state according to a cost function; the path taken to reach it does not matter. In N-Queens we only care about the final board, not the moves that produced it.
+
+**2. Why does an optimisation problem require a way to evaluate candidate solutions?**
+There is often no single known goal state to compare against (`goal=None` in `QueensProblem`). The cost function (`count_conflicts`) tells the algorithm how good a board is, so it can compare neighbours and decide which direction is an improvement. Without it the algorithm has no way to tell better states from worse ones.
+
+**3. Why can Hill Climbing become stuck in a local minimum?**
+Hill Climbing only moves to a neighbour that is strictly better than the current state. If every neighbour has the same or higher cost, it stops, even if the cost is still above 0. In our runs it often stopped with 1 or 2 conflicts remaining because no single queen move could reduce the count, even though a solution existed elsewhere in the search space.
+
+**4. What is a plateau?**
+A plateau is a region of the search space where many neighbouring states have the same cost. Because no neighbour is better, Hill Climbing has no direction to move in and stops (our implementation stops when the best neighbour is not strictly better).
+
+**5. How does Simulated Annealing attempt to overcome the limitations of Hill Climbing?**
+It picks a random neighbour and always accepts it if it is better, but also accepts a worse neighbour with probability `e^(-delta / T)`. When the temperature is high, worse moves are accepted often, so the algorithm explores widely and can climb out of local minima. As the temperature cools, worse moves become rare and it behaves more like Hill Climbing. With slow cooling (0.999) it solved 29 of 30 boards, compared with 4 of 30 for Hill Climbing. With fast cooling (0.95) it had too few steps and solved none, which shows the trade-off between solution quality and runtime.
+
+**6. What is the difference between deterministic and stochastic search?**
+A deterministic algorithm always makes the same choice from the same state; Hill Climbing always picks the lowest-cost neighbour, so the same start board always gives the same result. A stochastic algorithm uses randomness in its decisions; Simulated Annealing picks random neighbours and accepts worse moves by chance, so the same start board can give different results on different runs.
+
+**7. How did the `Problem` representation allow us to represent both a grid world and N-Queens?**
+`Problem` only defines a general interface: `initial`, `goal`, `actions(state)`, `result(state, action)` and `goal_test(state)`. It knows nothing about grids or queens. `GridProblem` fills these in with `(x, y)` states and `"UP"/"DOWN"/"LEFT"/"RIGHT"` actions, while `QueensProblem` uses a list of rows as the state and `(column, new_row)` as the action. Because both follow the same interface, algorithms such as `generate_neighbours` work without knowing which problem they are solving.
+
+**8. How do optimisation techniques such as these relate to Machine Learning?**
+Training a Machine Learning model is an optimisation problem: the state is the model's parameters and the cost function is the loss. Gradient descent is similar to Hill Climbing: it repeatedly moves the parameters in the direction that lowers the loss, and it can also get stuck in local minima. Stochastic techniques such as stochastic gradient descent, random initialisation and hyperparameter search use randomness in the same way Simulated Annealing does, to explore the search space and avoid poor local solutions.
 
 
 # Extensions
