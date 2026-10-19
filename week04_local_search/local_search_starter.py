@@ -154,7 +154,7 @@ def hill_climbing(problem, start_board):
         if count_conflicts(current) == 0:
             return current
         
-        # Generate every board one  ove away
+        # Generate every board one move away
         neighbours = generate_neighbours(problem, current)
 
         # Pick the neighbour with the fewest conflicts
