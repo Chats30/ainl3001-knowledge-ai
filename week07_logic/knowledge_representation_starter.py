@@ -8,7 +8,7 @@ BSP
 """
 
 # TASK 1 — Represent facts (provided; inspect and experiment).
-facts = {"rainy", "weekday"}
+facts = {"rainy", "weekday", "cold"}
 
 # TASK 2 — Represent rules (provided; inspect and experiment).
 # Each rule is (list_of_required_facts, conclusion).
@@ -29,8 +29,22 @@ def forward_chaining(known_facts, rules):
     3. Repeat until an entire pass adds no new facts.
     4. Return the completed set.
     """
-    # TODO
-    pass
+    # Copy so the original facts set is never modified
+    inferred_facts = set(known_facts)
+
+    # Keep looping until a full pass over the rules adds nothing new
+    changed = True
+    while changed:
+        changed = False
+        for conditions, conclusion in rules:
+            # Rule fires only if ALL its conditions are already known (AND)
+            if all(c in inferred_facts for c in conditions):
+                # Only add genuinely new facts, otherwise the loop never ends
+                if conclusion not in inferred_facts:
+                    inferred_facts.add(conclusion)
+                    changed = True  # new fact may unlock other rules, so re-scan
+    return inferred_facts
+
 
 
 def query(inferred_facts, statement):
@@ -38,8 +52,8 @@ def query(inferred_facts, statement):
 
     A False result means 'not established', not necessarily 'false'.
     """
-    # TODO
-    pass
+    # Set membership test: True = established, False = not established
+    return statement in inferred_facts
 
 
 if __name__ == "__main__":
